@@ -10,9 +10,9 @@ class D2Manifest:
         conn = sqlite3.connect(manifest_path)
         self._cur = conn.cursor()
 
-    def get_inventory_item_definition(self, hash):
+    def get_definition(self, table, hash):
         self._cur.execute(
-            "SELECT json FROM DestinyInventoryItemDefinition WHERE id = ?",
+            f"SELECT json FROM {table} WHERE id = ?",
             (self._d2_hash(hash),)
             )
         row = self._cur.fetchone()
@@ -23,6 +23,15 @@ class D2Manifest:
             except json.JSONDecodeError:
                 return None
         return None
+
+    def get_inventory_item_definition(self, hash):
+        return self.get_definition("DestinyInventoryItemDefinition", hash)
+
+    def get_inventory_bucket_definition(self, hash):
+        return self.get_definition("DestinyInventoryBucketDefinition", hash)
+
+    def get_loadout_color_definition(self, hash):
+        return self.get_definition("DestinyLoadoutColorDefinition", hash)
 
     # SQlite3 IDs are Signed Int, D2 Hash are Unsigned Int
     def _d2_hash(self, hash):
