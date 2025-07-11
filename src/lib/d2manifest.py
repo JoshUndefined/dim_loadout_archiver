@@ -33,6 +33,12 @@ class D2Manifest:
     def get_loadout_color_definition(self, hash):
         return self.get_definition("DestinyLoadoutColorDefinition", hash)
 
+    def get_loadout_icon_definition(self, hash):
+        return self.get_definition("DestinyLoadoutIconDefinition", hash)
+
+    def get_loadout_name_definition(self, hash):
+        return self.get_definition("DestinyLoadoutNameDefinition", hash)
+
     # SQlite3 IDs are Signed Int, D2 Hash are Unsigned Int
     def _d2_hash(self, hash):
         return hash - 2**32 if hash > 0x7FFFFFFF else hash
