@@ -24,19 +24,19 @@ class D2Manifest:
                 return None
         return None
 
-    def get_inventory_item_definition(self, hash):
+    def get_inventory_item(self, hash):
         return self.get_definition("DestinyInventoryItemDefinition", hash)
 
-    def get_inventory_bucket_definition(self, hash):
+    def get_inventory_bucket(self, hash):
         return self.get_definition("DestinyInventoryBucketDefinition", hash)
 
-    def get_loadout_color_definition(self, hash):
+    def get_loadout_color(self, hash):
         return self.get_definition("DestinyLoadoutColorDefinition", hash)
 
-    def get_loadout_icon_definition(self, hash):
+    def get_loadout_icon(self, hash):
         return self.get_definition("DestinyLoadoutIconDefinition", hash)
 
-    def get_loadout_name_definition(self, hash):
+    def get_loadout_name(self, hash):
         return self.get_definition("DestinyLoadoutNameDefinition", hash)
 
     # SQlite3 IDs are Signed Int, D2 Hash are Unsigned Int
