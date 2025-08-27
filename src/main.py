@@ -30,23 +30,92 @@ def main():
     # TODO: Download the manifest locally instead
     manifest = D2Manifest(Path.cwd() / "data/manifest.db", verbose=True)
 
+    with open("data/dim-api_loadouts_20250711-0854.json") as f: # DEBUG: Hard coded file name for now
+        dim_loadouts = json.load(f)
+        # logger.info(dim_loadouts)
+    
+    # print(dim_loadouts["sync"])
+    # print(dim_loadouts["loadouts"])
+    # print(dim_loadouts["syncToken"])
+    
+    for loadout in dim_loadouts["loadouts"]:
+        # DEBUG look at a specific loadout
+        if loadout["id"] != "015918bc-a732-4c27-b8f2-54d708b67424":
+            continue
+            
+        logger.info(f"-------------------------------------------\nLoadout {loadout['id']} {loadout['name']}")
+        # logger.info(loadout) # DEBUG https://github.com/DestinyItemManager/dim-api/blob/master/api/shapes/loadouts.ts
+
+        logger.info("\n-------------------------------------------\n-----info:\n")
+        logger.info(f"DIM id: {loadout['id']}")
+        logger.info(f"name: {loadout['name']}")
+        logger.info(f"classType: {loadout['classType']}")
+        logger.info(f"createdAt: {loadout['createdAt']}")
+        logger.info(f"lastUpdatedAt: {loadout['lastUpdatedAt']}")
+        logger.info(f"notes: {loadout['notes']}")
+        if "inGameIdentifiers" in loadout["parameters"].keys():
+            inGameIdentifier = loadout["parameters"]["inGameIdentifiers"]
+            logger.info("inGameLoadoutColor: https://bungie.net/" + manifest.get_loadout_color(inGameIdentifier["colorHash"]).get("colorImagePath"))
+            logger.info("inGameLoadoutIcon: https://bungie.net/" + manifest.get_loadout_icon(inGameIdentifier["iconHash"]).get("iconImagePath"))
+            logger.info("inGameLoadoutName: " + manifest.get_loadout_name(inGameIdentifier["nameHash"]).get("name"))
+    
+        logger.info("\n-------------------------------------------\n-----equipped:\n")
+        for equipped in loadout["equipped"]:
+            logger.info(manifest.get_inventory_item(equipped["hash"]))
+            # TODO for weapons:
+            '''
+            - Get item hash and instance from the loadout
+            - Use the hash in Manifest to get the weapon
+                - From socketCategories[], get a list of socketIndexes where socketCategoryHash = 4241085061 (Weapon Perks)
+                - For Curated roll: socketEntries[socketIndexes[...]].singleInitialItemHash
+            - Get instancedItem from D2 API with ?components=305,310 (ItemSockets & ItemReusablePlugs)
+                - If it doesn't exist, use the Curated Roll above
+                - Response.sockets.data.sockets[socketIndexes[]] has the current plug configuration
+                - Response.reusableSockets.data.plugs[socketIndexes[]] has every socket available plug
+            '''
+            logger.info(manifest.get_curated_weapon(equipped["hash"]))
+
+            if "socketOverrides" in equipped.keys():
+            # Subclass selectable details like Super, Aspects, Abilities
+                logger.info("\n-------------------------------------------\n-----socketOverrides:\n")
+                for subclass in equipped["socketOverrides"].values():
+                    logger.info(manifest.get_inventory_item(subclass))
+
+        logger.info("\n-------------------------------------------\n-----unequipped:\n")
+        for unequipped in loadout["unequipped"]:
+            logger.info(manifest.get_inventory_item(unequipped["hash"]))
+            # TODO: Get instanced item details
+
+        logger.info("\n-------------------------------------------\n-----mods:\n")
+        # These are "loose" armor mods set in DIM that the DIM loadout generator will assign to armor
+        for mod in loadout["parameters"]["mods"]:
+            logger.info(manifest.get_inventory_item(mod))
+
+        logger.info("\n-------------------------------------------\n-----mods by bucket:\n")
+        # Cosmetic armor mods by armor slot
+        for inventoryBucket in loadout["parameters"]["modsByBucket"]:
+            logger.info(f"-- Bucket: {manifest.get_inventory_bucket(int(inventoryBucket))}")
+            for mod in loadout["parameters"]["modsByBucket"][inventoryBucket]:
+                # logger.info(mod)
+                logger.info(manifest.get_inventory_item(mod))
+
+        if "artifactUnlocks" in loadout["parameters"].keys():
+            logger.info("\n-------------------------------------------\n-----artifactUnlocks:\n")
+            # Seasonal artifact mods
+            for artifactMod in loadout["parameters"]["artifactUnlocks"]["unlockedItemHashes"]:
+                # logger.info(artifactMod)
+                logger.info(manifest.get_inventory_item(artifactMod))
+
+        break # DEBUG just running the first found loadout for now
+
+
+
+def test(manifest):
     ######################
     # Below are just tests to get a better understanding of the way sockets and plugs work for weapons
+    # Hash values are manually grabbed from a call to Destiny2.GetItem API endpoint
     # "id": "0025a7a6-08b0-4e7d-9ac5-5e73f0b7f71b",
     # "name": "S25 Solo GM Birthplace Healing",
-
-
-    # TODO for weapons:
-    '''
-    - Get item hash and instance from the loadout
-    - Use the hash in Manifest to get the weapon
-        - From socketCategories[], get a list of socketIndexes where socketCategoryHash = 4241085061 (Weapon Perks)
-        - For Curated roll: socketEntries[socketIndexes[...]].singleInitialItemHash
-    - Get instancedItem from D2 API with ?components=305,310 (ItemSockets & ItemReusablePlugs)
-        - If it doesn't exist, use the Curated Roll above
-        - Response.sockets.data.sockets[socketIndexes[]] has the current plug configuration
-        - Response.reusableSockets.data.plugs[socketIndexes[]] has every socket available plug
-    '''
 
     logger.info("-------\nInstanced Item (Kinetic) Exotic 6917529570267995779")
     logger.info("Response: sockets: data: sockets: ")
@@ -153,75 +222,6 @@ def main():
     logger.info(manifest.get_inventory_item(3727270518))
     logger.info("Response: reusablePlugs: data: plugs: 4: ")
     logger.info(manifest.get_inventory_item(4248210736))
-
-
-    with open("data/dim-api_loadouts_20250711-0854.json") as f: # DEBUG: Hard coded file name for now
-        dim_loadouts = json.load(f)
-        # logger.info(dim_loadouts)
-    
-    # print(dim_loadouts["sync"])
-    # print(dim_loadouts["loadouts"])
-    # print(dim_loadouts["syncToken"])
-    
-    for loadout in dim_loadouts["loadouts"]:
-        # DEBUG look at a specific loadout
-        if loadout["id"] != "015918bc-a732-4c27-b8f2-54d708b67424":
-            continue
-            
-        logger.info(f"-------------------------------------------\nLoadout {loadout['id']} {loadout['name']}")
-        # logger.info(loadout) # DEBUG https://github.com/DestinyItemManager/dim-api/blob/master/api/shapes/loadouts.ts
-
-        logger.info("\n-------------------------------------------\n-----info:\n")
-        logger.info(f"DIM id: {loadout['id']}")
-        logger.info(f"name: {loadout['name']}")
-        logger.info(f"classType: {loadout['classType']}")
-        logger.info(f"createdAt: {loadout['createdAt']}")
-        logger.info(f"lastUpdatedAt: {loadout['lastUpdatedAt']}")
-        logger.info(f"notes: {loadout['notes']}")
-        if "inGameIdentifiers" in loadout["parameters"].keys():
-            inGameIdentifier = loadout["parameters"]["inGameIdentifiers"]
-            logger.info("inGameLoadoutColor: https://bungie.net/" + manifest.get_loadout_color(inGameIdentifier["colorHash"]).get("colorImagePath"))
-            logger.info("inGameLoadoutIcon: https://bungie.net/" + manifest.get_loadout_icon(inGameIdentifier["iconHash"]).get("iconImagePath"))
-            logger.info("inGameLoadoutName: " + manifest.get_loadout_name(inGameIdentifier["nameHash"]).get("name"))
-    
-        logger.info("\n-------------------------------------------\n-----equipped:\n")
-        for equipped in loadout["equipped"]:
-            logger.info(manifest.get_inventory_item(equipped["hash"]))
-            # TODO: Get instanced item details
-
-            if "socketOverrides" in equipped.keys():
-            # Subclass selectable details like Super, Aspects, Abilities
-                logger.info("\n-------------------------------------------\n-----socketOverrides:\n")
-                for subclass in equipped["socketOverrides"].values():
-                    logger.info(manifest.get_inventory_item(subclass))
-
-        logger.info("\n-------------------------------------------\n-----unequipped:\n")
-        for unequipped in loadout["unequipped"]:
-            logger.info(manifest.get_inventory_item(unequipped["hash"]))
-            # TODO: Get instanced item details
-
-        logger.info("\n-------------------------------------------\n-----mods:\n")
-        # These are "loose" armor mods set in DIM that the DIM loadout generator will assign to armor
-        for mod in loadout["parameters"]["mods"]:
-            logger.info(manifest.get_inventory_item(mod))
-
-        logger.info("\n-------------------------------------------\n-----mods by bucket:\n")
-        # Cosmetic armor mods by armor slot
-        for inventoryBucket in loadout["parameters"]["modsByBucket"]:
-            logger.info(f"-- Bucket: {manifest.get_inventory_bucket(int(inventoryBucket))}")
-            for mod in loadout["parameters"]["modsByBucket"][inventoryBucket]:
-                # logger.info(mod)
-                logger.info(manifest.get_inventory_item(mod))
-
-        if "artifactUnlocks" in loadout["parameters"].keys():
-            logger.info("\n-------------------------------------------\n-----artifactUnlocks:\n")
-            # Seasonal artifact mods
-            for artifactMod in loadout["parameters"]["artifactUnlocks"]["unlockedItemHashes"]:
-                # logger.info(artifactMod)
-                logger.info(manifest.get_inventory_item(artifactMod))
-
-        break # DEBUG just running the first found loadout for now
-
 
 if __name__ == "__main__":
     main()

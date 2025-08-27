@@ -172,6 +172,11 @@ class D2Manifest:
             "description": data["description"],
             "icon": data["icon"]
         }
+    
+    def get_curated_weapon(self, hash):
+        data = None
+        # TODO
+        return data
 
     # SQlite3 IDs are Signed Int, D2 Hash are Unsigned Int
     def _d2_hash(self, hash):
