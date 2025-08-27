@@ -200,7 +200,8 @@ class D2Manifest:
         # return_data["perks"] = socketEntries
         perks = []
         for perk in socketEntries:
-            perks.append(perk.get("displayProperties", {}).get("name"))
+            if perk:
+                perks.append(perk.get("displayProperties", {}).get("name", {})) # TESTING, Just get the perk name for now
         return_data["curatedPerks"] = perks
 
 
