@@ -185,6 +185,7 @@ class D2Manifest:
         # return_data["raw_data_test"] = data#.get("socketCategories")
 
         # From socketCategories[], get a list of socketIndexes where socketCategoryHash = 4241085061 (Weapon Perks)
+        socketIndexes = []
         socketCategories_raw = data.get("socketCategories")
         if(socketCategories_raw):
             for category in socketCategories_raw:
