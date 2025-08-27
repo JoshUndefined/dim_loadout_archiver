@@ -28,7 +28,7 @@ def main():
 
 
     # TODO: Download the manifest locally instead
-    manifest = D2Manifest(Path.cwd() / "data/manifest.db", verbose=True)
+    manifest = D2Manifest(Path.cwd() / "data/manifest.db", verbose=args.verbose)
 
     with open("data/dim-api_loadouts_20250711-0854.json") as f: # DEBUG: Hard coded file name for now
         dim_loadouts = json.load(f)
@@ -81,8 +81,12 @@ def main():
                     - Response.sockets.data.sockets[socketIndexes[]] has the current plug configuration
                     - Response.reusableSockets.data.plugs[socketIndexes[]] has every socket available plug
                 '''
-                logger.info("Curated roll: " + manifest.get_curated_weapon(equipped["hash"]))
-                # TODO: this isn't checking for weapon vs subclass vs armor
+                logger.info("Curated weapon roll: " + manifest.get_curated_weapon(equipped["hash"]))
+                # TODO: Get instanced item details
+                logger.info("Item Instance ID: " + equipped.get("id"))
+                craftedDate = equipped.get("craftedDate")
+                if craftedDate:
+                    logger.info("Crafted: " + datetime.fromtimestamp(craftedDate).strftime("%Y-%m-%d %H:%M:%S UTC"))
 
                 if "socketOverrides" in equipped.keys():
                 # Subclass selectable details like Super, Aspects, Abilities
@@ -96,8 +100,12 @@ def main():
         if "unequipped" in loadout.keys():
             for unequipped in loadout["unequipped"]:
                 logger.info("Manifest info: " + manifest.get_inventory_item(unequipped["hash"]))
-                logger.info("Curated roll: " + manifest.get_curated_weapon(unequipped["hash"]))
+                logger.info("Curated weapon roll: " + manifest.get_curated_weapon(unequipped["hash"]))
                 # TODO: Get instanced item details
+                logger.info("Item Instance ID: " + unequipped.get("id"))
+                craftedDate = unequipped.get("craftedDate")
+                if craftedDate:
+                    logger.info("Crafted: " + datetime.fromtimestamp(craftedDate).strftime("%Y-%m-%d %H:%M:%S UTC"))
         else:
             logger.info("loadout.unequipped does not exist")
 
