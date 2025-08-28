@@ -12,9 +12,13 @@ class D2Manifest:
         self.verbose = verbose
 
     def get_inventory_item(self, hash, pretty = True):
-        data = self.get_definition("DestinyInventoryItemDefinition", hash)
         return_data = {}
         return_data["hash"] = hash
+
+        data = self.get_definition("DestinyInventoryItemDefinition", hash)
+        if data is None:
+            return_data["error"] = f"item hash {hash} does not exist in manifest. Check manifest version."
+            return json.dumps(return_data, indent=2) if pretty else return_data
 
         displayProperties_raw = data.get("displayProperties", {})
         displayProperties = {
@@ -178,9 +182,15 @@ class D2Manifest:
         return data
     
     def get_curated_weapon(self, hash, pretty = True):
-        data = self.get_definition("DestinyInventoryItemDefinition", hash).get("sockets", {})
         return_data = {}
         return_data["hash"] = hash
+
+        data = self.get_definition("DestinyInventoryItemDefinition", hash)
+        if data is None:
+            return_data["error"] = f"item hash {hash} does not exist in manifest. Check manifest version."
+            return json.dumps(return_data, indent=2) if pretty else return_data
+        
+        data = self.get_definition("DestinyInventoryItemDefinition", hash).get("sockets", {})
 
         # return_data["raw_data_test"] = data#.get("socketCategories")
 
