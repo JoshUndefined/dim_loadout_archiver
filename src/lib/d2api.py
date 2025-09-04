@@ -4,6 +4,7 @@ import os
 from localStoragePy import localStoragePy
 import requests
 import json
+from lib.d2manifest import D2Manifest
 
 class DestinyAPI_Credentials:
     def __init__(self, client_id=None, client_secret=None, api_key=None, redirect_uri=None):
@@ -19,7 +20,8 @@ class DestinyAPI_Credentials:
             self.redirect_uri = redirect_uri
 
 class DestinyAPI:
-    def __init__(self, credentials = DestinyAPI_Credentials(), verbose = False):
+    def __init__(self, manifest, credentials = DestinyAPI_Credentials(), verbose = False):
+        self.manifest = manifest
         self.credentials = credentials
 
     def authorize(self):
@@ -54,7 +56,7 @@ class DestinyAPI:
         r.raise_for_status()
         return r.json()
     
-    def get_instanced_item(self, item_id):
+    def bnet_get_item(self, item_id):
         headers = {
             'X-API-Key': self.credentials.api_key,
             'Authorization': f"Bearer {self.access_token}"
@@ -69,7 +71,39 @@ class DestinyAPI:
         except:
             pass
         return r.json()
-    
-    def get_instanced_weapon(self, item_id, pretty=True):
-        return_data = self.get_instanced_item(item_id)
+
+    def get_instanced_item(self, item_id, hash, pretty=True):
+        return_data = {}
+        return_data["hash"] = hash
+        return_data["id"] = item_id
+        
+        # Instanced item available perks by socket
+        reusable_plugs_raw = self.bnet_get_item(item_id).get("Response", {}).get("reusablePlugs", {}).get("data", {}).get("plugs", {})
+        # return_data["reusable_plugs_raw"] = reusable_plugs_raw # DEBUG
+
+
+        data = self.manifest.get_definition("DestinyInventoryItemDefinition", hash)
+        if data is None:
+            return_data["error"] = f"item hash {hash} does not exist in manifest. Check manifest version."
+            return json.dumps(return_data, indent=2) if pretty else return_data
+        
+        data = self.manifest.get_definition("DestinyInventoryItemDefinition", hash).get("sockets", {})
+        # From socketCategories[], get a list of socketIndexes where socketCategoryHash = 4241085061 (Weapon Perks)
+        socketIndexes = []
+        socketCategories_raw = data.get("socketCategories")
+        if(socketCategories_raw):
+            for category in socketCategories_raw:
+                if category.get("socketCategoryHash") == 4241085061: # Weapon Perks
+                    socketIndexes = category.get("socketIndexes", [])
+                    # return_data["socketIndexes"] = socketIndexes # DEBUG
+        for i in socketIndexes:
+            perks = []
+            for perk in reusable_plugs_raw.get(str(i), {}):
+                perk_name = self.manifest.get_weapon_perk(perk.get("plugItemHash")).get("displayProperties", {}).get("name", {}) # TESTING, Just get the perk name for now
+                perks.append(perk_name)
+            if perks != []:
+                return_data["socket " + str(i)] = perks
+
+
+
         return json.dumps(return_data, indent=2) if pretty else return_data
