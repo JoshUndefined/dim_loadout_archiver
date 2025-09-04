@@ -10,7 +10,14 @@ D2 Manifest, and export a flat JSON file
 
 - Create directory data/
 - Manually Save `manifest.db`
+    - https://www.bungie.net/Platform/Destiny2/Manifest/
+    - https://www.bungie.net/`{Response.mobileWorldContentPaths.en}`
+    - Unzip downloaded file, rename as `data/manifest.db`
 - Manually Save `dim-api_loadouts_[date-time].json`
+    - In Postman->DIM API:
+        - Refresh Bungie access token and save to Collection Vars
+        - Refresh DIM access token and save to Collection Vars
+        - GET GetLoadouts, save result to `data/` and update `main.py` filepath
 - `python src/main.py`
 
 ## Roadmap

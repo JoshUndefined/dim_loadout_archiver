@@ -12,9 +12,13 @@ class D2Manifest:
         self.verbose = verbose
 
     def get_inventory_item(self, hash, pretty = True):
-        data = self.get_definition("DestinyInventoryItemDefinition", hash)
         return_data = {}
         return_data["hash"] = hash
+
+        data = self.get_definition("DestinyInventoryItemDefinition", hash)
+        if data is None:
+            return_data["error"] = f"item hash {hash} does not exist in manifest. Check manifest version."
+            return json.dumps(return_data, indent=2) if pretty else return_data
 
         displayProperties_raw = data.get("displayProperties", {})
         displayProperties = {
@@ -172,6 +176,62 @@ class D2Manifest:
             "description": data["description"],
             "icon": data["icon"]
         }
+    
+    def get_weapon_perk(self, hash):
+        data = self.get_definition("DestinyInventoryItemDefinition", hash)
+        return data
+    
+    def get_curated_weapon(self, hash, pretty = True):
+        return_data = {}
+        return_data["hash"] = hash
+
+        data = self.get_definition("DestinyInventoryItemDefinition", hash)
+        if data is None:
+            return_data["error"] = f"item hash {hash} does not exist in manifest. Check manifest version."
+            return json.dumps(return_data, indent=2) if pretty else return_data
+        
+        data = self.get_definition("DestinyInventoryItemDefinition", hash).get("sockets", {})
+
+        # return_data["raw_data_test"] = data#.get("socketCategories")
+
+        # From socketCategories[], get a list of socketIndexes where socketCategoryHash = 4241085061 (Weapon Perks)
+        socketIndexes = []
+        socketCategories_raw = data.get("socketCategories")
+        if(socketCategories_raw):
+            for category in socketCategories_raw:
+                if category.get("socketCategoryHash") == 4241085061: # Weapon Perks
+                    socketIndexes = category.get("socketIndexes", [])
+                    # return_data["socketIndexes"] = socketIndexes
+
+        # For Curated roll: socketEntries[socketIndexes[...]].singleInitialItemHash
+        socketEntries_raw = data.get("socketEntries", [])
+        socketEntries = []
+        for i in socketIndexes:
+            socketEntries.append(self.get_weapon_perk(socketEntries_raw[i].get("singleInitialItemHash")))
+        # return_data["perks"] = socketEntries
+        perks = []
+        for perk in socketEntries:
+            if perk:
+                perks.append(perk.get("displayProperties", {}).get("name", {})) # TESTING, Just get the perk name for now
+        return_data["curatedPerks"] = perks
+
+
+        # TODO: intrinsic maybe didn't work as expected?
+        # intrinsic = data.get("intrinsicSockets", [])[0].get("plugItemHash")
+        # return_data["intrinsic"] = self.get_weapon_perk(intrinsic)
+
+        # intrinsics_raw = data.get("intrinsicSockets")
+        # if(intrinsics_raw):
+        #     intrinsics = []
+        #     for intrinsic in intrinsics_raw:
+        #         if(self.get_weapon_perk(intrinsic.get("plugItemHash"))):
+        #             intrinsic_data = {}
+        #             intrinsic_data["rawtest"] = self.get_weapon_perk(intrinsic.get("plugItemHash"))
+        #             if(self.verbose): intrinsic_data["plugItemHash"] = intrinsic.get("plugItemHash")
+        #             intrinsics.append(intrinsic_data)
+        #     return_data["intrinsics"] = intrinsics
+
+        return json.dumps(return_data, indent=2) if pretty else return_data
 
     # SQlite3 IDs are Signed Int, D2 Hash are Unsigned Int
     def _d2_hash(self, hash):
