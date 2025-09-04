@@ -24,7 +24,7 @@ class DestinyAPI:
 
     def authorize(self):
         # TODO: handle auth tokens and refreshing using localstorage, for now it's in .env
-        self.access_token = os.environ.get("TEMP_ACCESS_TOKEN")
+        self.access_token = self.refresh_token(os.environ.get("TEMP_REFRESH_TOKEN")).get("access_token")
 
     def exchange_code(self, code):
         data = {
