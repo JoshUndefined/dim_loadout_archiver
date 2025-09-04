@@ -54,7 +54,7 @@ class DestinyAPI:
         r.raise_for_status()
         return r.json()
     
-    def get_instanced_item(self, item_id):
+    def bnet_get_item(self, item_id):
         headers = {
             'X-API-Key': self.credentials.api_key,
             'Authorization': f"Bearer {self.access_token}"
@@ -70,6 +70,6 @@ class DestinyAPI:
             pass
         return r.json()
     
-    def get_instanced_weapon(self, item_id, pretty=True):
-        return_data = self.get_instanced_item(item_id)
+    def get_instanced_item(self, item_id, pretty=True):
+        return_data = self.bnet_get_item(item_id)
         return json.dumps(return_data, indent=2) if pretty else return_data

@@ -29,14 +29,9 @@ def main():
     logger.info("DIM Loadout Archiver")
     logger.debug("Verbose logging enabled")
 
-
     bnet = DestinyAPI()
     bnet.authorize()
-    r = bnet.get_instanced_weapon(6917530072480039762)
-    logger.info(r)
-
-
-
+    
     # TODO: Download the manifest locally instead
     manifest = D2Manifest(Path.cwd() / "data/manifest.db", verbose=args.verbose)
 
@@ -54,9 +49,9 @@ def main():
         # DEBUG look at a specific loadout
         # if loadout["id"] != "015918bc-a732-4c27-b8f2-54d708b67424":
         # if loadout["id"] != "016b1049-9650-436b-8624-bc6fad245911":
-        # if loadout["id"] != "01c98aec-2173-404d-8094-dca10f0caa2b": 
+        if loadout["id"] != "01c98aec-2173-404d-8094-dca10f0caa2b": 
         # if loadout["id"] != "7ffe28ce-c867-4481-9cf3-d87860d36d45": 
-        #     continue
+            continue
             
         logger.info(f"-------------------------------------------\nLoadout {loadout['id']} {loadout['name']}")
         # logger.info(loadout) # DEBUG https://github.com/DestinyItemManager/dim-api/blob/master/api/shapes/loadouts.ts
@@ -94,6 +89,8 @@ def main():
                 logger.info("Curated weapon roll: " + manifest.get_curated_weapon(equipped["hash"]))
                 # TODO: Get instanced item details
                 logger.info("Item Instance ID: " + equipped.get("id"))
+                r = bnet.get_instanced_item(equipped.get("id"), False)
+                logger.info(r)
                 craftedDate = equipped.get("craftedDate")
                 if craftedDate:
                     logger.info("Crafted: " + datetime.fromtimestamp(craftedDate).strftime("%Y-%m-%d %H:%M:%S UTC"))
@@ -113,6 +110,8 @@ def main():
                 logger.info("Curated weapon roll: " + manifest.get_curated_weapon(unequipped["hash"]))
                 # TODO: Get instanced item details
                 logger.info("Item Instance ID: " + unequipped.get("id"))
+                r = bnet.get_instanced_item(unequipped.get("id"), False)
+                logger.info(r)
                 craftedDate = unequipped.get("craftedDate")
                 if craftedDate:
                     logger.info("Crafted: " + datetime.fromtimestamp(craftedDate).strftime("%Y-%m-%d %H:%M:%S UTC"))
