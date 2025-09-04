@@ -30,9 +30,8 @@ def main():
 
     bnet = DestinyAPI()
     bnet.authorize()
-    r = bnet.get_instanced_item(6917530072480039762)
-    logger.info(f"result: {r.get('Message')}")
-    logger.info(json.dumps(r))
+    r = bnet.get_instanced_weapon(6917530072480039762)
+    logger.info(r)
 
 
 

@@ -69,3 +69,7 @@ class DestinyAPI:
         except:
             pass
         return r.json()
+    
+    def get_instanced_weapon(self, item_id, pretty=True):
+        return_data = self.get_instanced_item(item_id)
+        return json.dumps(return_data, indent=2) if pretty else return_data
