@@ -6,6 +6,12 @@
 Connect to Player's DIM account to pull raw data for DIM Loadouts, join with data from
 D2 Manifest, and export a flat JSON file
 
+In reality, this is actually a project for me to learn how to:
+
+- Link parts of the Destiny API and Manifest
+- Navigate and handle JSON with Python
+- Just learn more about Python in general
+
 ## Usage
 
 - Create directory data/
@@ -23,8 +29,11 @@ D2 Manifest, and export a flat JSON file
 ## Roadmap
 
 - [ ] Authorize with Bungie and DIM
+    - Bungie auth working in v0.2.0
+    [ ] Improve OAuth process with localstorage and auth code capture 
 - [ ] Check version and Download Manifest
 - [ ] Get DIM Loadouts
+    - Currently using a manual download from DIM
 - [x] Flatten loadouts with information from Manifest
-- [ ] Get InstancedItem data
-- [ ] Flatten InstancedItem into Loadouts
+- [x] Get InstancedItem data
+- [x] Flatten InstancedItem into Loadouts
