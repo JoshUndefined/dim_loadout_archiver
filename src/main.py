@@ -17,7 +17,9 @@ def main():
         description="DIM Loadout Archiver"
     )
     # parser.add_argument("", help="", type=str)
-    parser.add_argument("--verbose", "-v", action="store_true", help="Enable verbose debug output")
+    parser.add_argument("--verbose", "-v", action="store_true", dest="verbose", help="Enable verbose debug output")
+    parser.add_argument("--names-only", "-n", action="store_true", dest="names_only", help="Output loadout names only")
+    parser.add_argument("--details-only", "-d", action="store_true", dest="details_only", help="Output loadout names and details only")
     args = parser.parse_args()
 
     # =========== Logging ===========
@@ -68,6 +70,9 @@ def main():
         logger.info(f"-------------------------------------------\nLoadout {loadout['id']} {loadout['name']}")
         # logger.info(loadout) # DEBUG https://github.com/DestinyItemManager/dim-api/blob/master/api/shapes/loadouts.ts
 
+        if args.names_only:
+            continue
+
         logger.info("\n-------------------------------------------\n-----info:\n")
         logger.info(f"DIM id: {loadout.get('id')}")
         logger.info(f"name: {loadout.get('name')}")
@@ -82,6 +87,9 @@ def main():
             logger.info("inGameLoadoutName: " + manifest.get_loadout_name(inGameIdentifier["nameHash"]).get("name"))
         else:
             logger.info("loadout.parameters.inGameIdentifiers does not exist")
+
+        if args.details_only:
+            continue
     
         logger.info("\n-------------------------------------------\n-----equipped:\n")
         if "equipped" in loadout.keys():
